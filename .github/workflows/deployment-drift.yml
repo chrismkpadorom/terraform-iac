@@ -1,0 +1,36 @@
+name: QA Resources Deployment
+on:
+  schedule:
+    # Runs every day at 23:00 UTC
+    - cron: '0 21 * * *' # cron syntax defining a schedule (UTC Time)
+  workflow_dispatch: # Allows manual triggering
+  pull_request:
+    branches:
+      - main
+jobs:
+  dev:
+    uses: /.github/workflows/drift.yml@v1.0.0 #chrismkpadorom/terra-actions/.github/workflows/terraform-drift.yml@v1.0.0
+    with:
+      environment: dev
+      deployment_name: resources
+      runner: runner-group-1
+      tf_actions_working_dir: tfcode/project/resources
+    secrets: inherit
+  npd:
+    needs: dev
+    uses: /.github/workflows/drift.yml@v1.0.0
+    with:
+      environment: npd
+      deployment_name: resources
+      runner: runner-group-1
+      tf_actions_working_dir: tfcode/project/resources
+    secrets: inherit
+  prd:
+    needs: npd
+    uses: /.github/workflows/drift.yml@v1.0.0
+    with:
+      environment: prd
+      deployment_name: resources
+      runner: runner-group-1
+      tf_actions_working_dir: tfcode/project/resources
+    secrets: inherit
