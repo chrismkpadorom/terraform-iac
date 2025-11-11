@@ -1,0 +1,47 @@
+name: DLZ_Resources_Deployment
+on:
+  workflow_dispatch: # Allows manual triggering
+    inputs:
+      environments:
+        description: 'Manual triggering'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - npd
+        - prd
+  push:
+    paths:
+      - tfcode/datalandingzone/resources/*
+jobs:
+  dev:
+    if: ${{ success() || inputs.environment == 'dev' }}
+    uses: ./.github/workflows/terraform-plan-apply.yml@v1.0.0 #chrismkpadorom/terra-actions/.github/workflows/terraform-plan-apply.yml@v1.0.0
+    with:
+      environment: dev
+      deployment_name: resources
+      runner: runner-group-1
+      tf_actions_working_dir: tfcode/project/resources
+    secrets: inherit
+  npd:
+    if: ${{ success() || inputs.environment == 'npd' }}
+    needs: dev
+    uses: ./.github/workflows/terraform-plan-apply.yml@v1.0.0 
+    with:
+      environment: npd
+      deployment_name: resources
+      runner: runner-group-1
+      tf_actions_working_dir: tfcode/project/resources
+    secrets: inherit
+  prd:
+    if: ${{ success() || inputs.environment == 'prd' }}
+    needs: npd
+    uses: ./.github/workflows/terraform-plan-apply.yml@v1.0.0 
+    with:
+      environment: prd
+      deployment_name: resources
+      runner: runner-group-1
+      tf_actions_working_dir: tfcode/project/resources
+    secrets: inherit
+
